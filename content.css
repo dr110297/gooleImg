@@ -1,0 +1,52 @@
+/* 内容脚本样式 */
+.hellorf-download-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.hellorf-download-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
+}
+
+.hellorf-download-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 确保图片容器有相对定位 */
+.image-item, .photo-item, [class*="card"], [class*="item"] {
+  position: relative !important;
+}
+
+/* 消息提示样式 */
+.hellorf-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 10px 15px;
+  background: #4CAF50;
+  color: white;
+  z-index: 10000;
+  border-radius: 4px;
+  font-size: 14px;
+  max-width: 300px;
+}
+
+.hellorf-message.error {
+  background: #f44336;
+}
+
+.hellorf-message.warning {
+  background: #ff9800;
+}
