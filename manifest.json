@@ -39,7 +39,7 @@
 
   "content_scripts": [
     {
-      "matches": ["https://plus.hellorf.com/creative/search*"],
+      "matches": ["https://plus.hellorf.com/*"],
       "js": ["content.js"],
       "run_at": "document_end",
       "all_frames": true  
