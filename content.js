@@ -467,9 +467,6 @@ class ImageDownloadInjector {
                     <button class="btn btn-login" id="loginBtn">
                         <span>🔑</span> 登录账号
                     </button>
-                    <button class="btn" id="updateUserBtn">
-                        <span>👤</span> 设置用户信息
-                    </button>
                 </div>
                 
                 <div class="history-section">
@@ -513,10 +510,6 @@ class ImageDownloadInjector {
                         this.login();
                     });
 
-                    document.getElementById('updateUserBtn').addEventListener('click', () => {
-                        this.updateUserInfo();
-                    });
-
                     // 监听来自父窗口的消息
                     window.addEventListener('message', (event) => {
                         this.handleParentMessage(event);
@@ -538,22 +531,6 @@ class ImageDownloadInjector {
                     window.parent.postMessage({ action: 'login' }, '*');
                 }
 
-                // 更新用户信息
-                updateUserInfo() {
-                    const userId = prompt('请输入用户ID:');
-                    const userName = prompt('请输入用户名:');
-                    
-                    if (userId && userName) {
-                        window.parent.postMessage({ 
-                            action: 'updateUserInfo', 
-                            userInfo: {
-                                creationUserId: userId,
-                                creationUserName: userName
-                            }
-                        }, '*');
-                    }
-                }
-
                 // 处理来自父窗口的消息
                 handleParentMessage(event) {
                     const message = event.data;
@@ -568,9 +545,9 @@ class ImageDownloadInjector {
                                 this.checkLoginStatus();
                             }
                             break;
-                        case 'downloadStatus':
-                            this.handleDownloadStatus(message);
-                            break;
+                        // case 'downloadStatus':
+                        //     this.handleDownloadStatus(message);
+                        //     break;
                         case 'downloadHistory':
                             this.updateDownloadHistory(message.history);
                             break;
@@ -605,20 +582,20 @@ class ImageDownloadInjector {
                 }
 
                 // 处理下载状态
-                handleDownloadStatus(message) {
-                    switch (message.status) {
-                        case 'success':
-                            this.showMessage('下载成功', true);
-                            this.addToHistory(message.data);
-                            break;
-                        case 'error':
-                            this.showMessage('下载失败: ' + message.message, false);
-                            break;
-                        case 'requiresLogin':
-                            this.showMessage('请先登录', false);
-                            break;
-                    }
-                }
+                // handleDownloadStatus(message) {
+                //     switch (message.status) {
+                //         case 'success':
+                //             this.showMessage('下载成功', true);
+                //             this.addToHistory(message.data);
+                //             break;
+                //         case 'error':
+                //             this.showMessage('下载失败: ' + message.message, false);
+                //             break;
+                //         case 'requiresLogin':
+                //             this.showMessage('请先登录', false);
+                //             break;
+                //     }
+                // }
 
                 // 更新下载历史
                 updateDownloadHistory(history) {
@@ -756,9 +733,6 @@ class ImageDownloadInjector {
       case 'login':
         this.redirectToLogin();
         break;
-      case 'updateUserInfo':
-        this.updateUserInfoFromIframe(message.userInfo);
-        break;
     }
   }
 
@@ -783,18 +757,6 @@ class ImageDownloadInjector {
     chrome.runtime.sendMessage({ action: 'loginRedirect' });
   }
 
-  // 从iframe更新用户信息
-  async updateUserInfoFromIframe(userInfo) {
-    chrome.runtime.sendMessage({
-      action: 'updateUserInfo',
-      userInfo: userInfo
-    }, (response) => {
-      this.sendMessageToIframe({
-        action: 'userInfoUpdated',
-        success: response.success
-      });
-    });
-  }
 
   // 加载下载历史
   loadDownloadHistory() {
