@@ -66,9 +66,9 @@ class BackgroundService {
   // 检查登录状态（并获取用户信息）
   async checkLoginStatus(sendResponse) {
     try {
-      // 获取 test.xztimes.cn 的 cookie
+      // 获取 erp.xztimes.cn 的 cookie
       const cookies = await chrome.cookies.getAll({
-        url: 'http://test.xztimes.cn/'
+        url: 'http://erp.xztimes.cn/'
       });
       console.log('cookies', cookies);
 
@@ -81,7 +81,7 @@ class BackgroundService {
 
         try {
           // 请求 loginToken 接口
-          const response = await fetch('http://117.24.14.3:1012/api/app/products/productimagelibrary/getlogininfobyplug', {
+          const response = await fetch('http://117.24.12.124:1012/api/app/products/productimagelibrary/getlogininfobyplug', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -123,7 +123,7 @@ class BackgroundService {
   // 重定向到登录页面
   async redirectToLogin() {
     await chrome.tabs.create({
-      url: 'http://test.xztimes.cn/'
+      url: 'http://erp.xztimes.cn/'
     });
   }
 
@@ -156,7 +156,7 @@ class BackgroundService {
 
 
       // 发送API请求
-      const response = await fetch('http://117.24.14.3:1012/api/app/products/productimagelibrary/batchpluguploadimage', {
+      const response = await fetch('http://117.24.12.124:1012/api/app/products/productimagelibrary/batchpluguploadimage', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -214,7 +214,7 @@ class BackgroundService {
   // 内部登录状态检查
   async checkLoginStatusInternal() {
     const cookies = await chrome.cookies.getAll({
-      url: 'http://test.xztimes.cn/'
+      url: 'http://erp.xztimes.cn/'
     });
     
     const userData = await this.getStorageData('userData');

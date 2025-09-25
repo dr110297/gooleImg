@@ -29,8 +29,8 @@
 
   "host_permissions": [
     "https://plus.hellorf.com/*",
-    "http://test.xztimes.cn/",
-    "http://117.24.14.3:1012/"
+    "http://erp.xztimes.cn/",
+    "http://117.24.12.124:1012/"
   ],
 
   "background": {
