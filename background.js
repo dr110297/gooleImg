@@ -154,7 +154,6 @@ class BackgroundService {
       };
       console.log('requestData: ', requestData);
 
-
       // 发送API请求
       const response = await fetch('http://117.24.14.3:1012/api/app/products/productimagelibrary/batchpluguploadimage', {
         method: 'POST',
@@ -166,17 +165,10 @@ class BackgroundService {
 
       if (response.ok) {
         const result = await response
+        console.log(response)
         sendResponse({ success: true, data: result });
       } else {
-        let errorData;
-        try {
-          errorData = await response.json(); // 假设返回的是 JSON
-        } catch (e) {
-          errorData = await response.text(); // 如果不是 JSON，退化为文本
-        }
-        console.log('接口错误:', response.status, errorData);
-
-        throw new Error(`${errorData.error.code}`);
+        throw new Error(`HTTP错误: ${response.status}`);
       }
     } catch (error) {
       console.error('下载图片错误:', error);

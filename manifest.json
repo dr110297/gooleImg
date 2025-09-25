@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "图片下载器",
   "version": "1.0.0",
-  "description": "用于下载Hellorf网站图片的浏览器扩展",
+  "description": "用于下载Hellorf网站图片的浏览器扩展 - 内嵌版",
   "author": "开发者",
   
   "icons": {
@@ -14,10 +14,9 @@
   "action": {
     "default_icon": {
       "16": "image/icon16.png",
-      "48": "image/icon48.png"
+      "32": "image/icon48.png"
     },
-    "default_title": "图片下载器",
-    "default_popup": "popup.html"
+    "default_title": "图片下载器"
   },
 
   "permissions": [
@@ -40,18 +39,16 @@
 
   "content_scripts": [
     {
-      "matches": ["https://plus.hellorf.com/*"],
+      "matches": ["https://plus.hellorf.com/creative/search*"],
       "js": ["content.js"],
       "run_at": "document_end",
-      "css": [
-        "content.css"
-      ]
+      "all_frames": true  
     }
   ],
 
   "web_accessible_resources": [
     {
-      "resources": ["image/*.png"],
+      "resources": ["iframe.html", "iframe.js", "image/*.png"],
       "matches": ["https://plus.hellorf.com/*"]
     }
   ]
