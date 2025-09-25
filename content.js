@@ -41,7 +41,11 @@ class ImageDownloadInjector {
 
   // 注入控制面板按钮
   injectPanelButton() {
-    if (document.querySelector('.hellorf-panel-btn')) return;
+    // 移除已存在的面板按钮
+    const existingButton = document.querySelector('.hellorf-panel-btn');
+    if (existingButton) {
+      existingButton.remove();
+    }
 
     this.panelButton = document.createElement('button');
     this.panelButton.className = 'hellorf-panel-btn';
@@ -117,23 +121,24 @@ class ImageDownloadInjector {
     this.iframe.id = 'hellorf-control-panel';
     this.iframe.srcdoc = this.getIframeHTML();
     
-    // 设置iframe样式
+    // 设置iframe样式 - 修改为自适应高度
     this.iframe.style.position = 'fixed';
     this.iframe.style.top = '60px';
     this.iframe.style.right = '20px';
-    this.iframe.style.width = '400px';
-    this.iframe.style.height = '1020px';
+    this.iframe.style.width = '420px';
+    this.iframe.style.height = '950px'
     this.iframe.style.border = 'none';
     this.iframe.style.borderRadius = '12px';
     this.iframe.style.boxShadow = '0 8px 30px rgba(0,0,0,0.3)';
     this.iframe.style.zIndex = '9999';
     this.iframe.style.backgroundColor = 'white';
     this.iframe.style.display = 'none';
+    this.iframe.style.overflow = 'hidden'; // 隐藏iframe自身的滚动条
     
     document.body.appendChild(this.iframe);
   }
 
-  // 生成iframe HTML内容
+  // 生成iframe HTML内容 - 修改为自适应高度
   getIframeHTML() {
     return `
     <!DOCTYPE html>
@@ -147,7 +152,7 @@ class ImageDownloadInjector {
                 box-sizing: border-box;
             }
             
-            body {
+            html, body {
                 width: 100%;
                 height: 100%;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -173,6 +178,7 @@ class ImageDownloadInjector {
                 justify-content: space-between;
                 align-items: center;
                 border-radius: 12px 12px 0 0;
+                flex-shrink: 0;
             }
             
             .header-title {
@@ -211,12 +217,14 @@ class ImageDownloadInjector {
                 overflow: hidden;
                 display: flex;
                 flex-direction: column;
+                min-height: 0; /* 关键：允许内容区域收缩 */
             }
             
             .status-section {
                 background: white;
                 padding: 15px 20px;
                 border-bottom: 1px solid #eee;
+                flex-shrink: 0;
             }
             
             .status-header {
@@ -276,6 +284,7 @@ class ImageDownloadInjector {
                 flex-direction: column;
                 gap: 8px;
                 border-bottom: 1px solid #eee;
+                flex-shrink: 0;
             }
             
             .btn {
@@ -319,6 +328,7 @@ class ImageDownloadInjector {
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
+                min-height: 0; /* 关键：允许历史区域收缩 */
             }
             
             .history-title {
@@ -326,12 +336,13 @@ class ImageDownloadInjector {
                 font-weight: 600;
                 color: #555;
                 margin-bottom: 12px;
+                flex-shrink: 0;
             }
             
             .history-container {
                 flex: 1;
                 overflow-y: auto;
-                max-height: 400px;
+                min-height: 0; /* 关键：允许容器收缩 */
             }
             
             .history-list {
@@ -374,15 +385,6 @@ class ImageDownloadInjector {
                 flex-direction: column;
                 justify-content: center;
                 height: 100%;
-            }
-            
-            .history-title-text {
-                font-size: 14px;
-                font-weight: 500;
-                margin-bottom: 6px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
             }
             
             .history-id {
@@ -634,7 +636,6 @@ class ImageDownloadInjector {
                             historyItem.innerHTML = \`
                                 <img src="\${item.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjRTVFN0VCIi8+CjxwYXRoIGQ9Ik0zMCAxOEMzNi42Mjc0IDE4IDQyIDIzLjM3MjYgNDIgMzBDNDIgMzYuNjI3NCAzNi42Mjc0IDQyIDMwIDQyQzIzLjM3MjYgNDIgMTggMzYuNjI3NCAxOCAzMEMxOCAyMy4zNzI2IDIzLjM3MjYgMTggMzAgMThaTTMwIDE1QzIxLjM0MzEgMTUgMTQgMjIuMzQzMSAxNCAzMEMxNCAzNy42NTY5IDIxLjM0MzEgNDUgMzAgNDVDMzguNjU2OSA0NSA0NiAzNy42NTY5IDQ2IDMwQzQ2IDIyLjM0MzEgMzguNjU2OSAxNSAzMCAxNVoiIGZpbGw9IiNBOUE5QTkiLz4KPHBhdGggZD0iTTM0IDI3SDIzVjM0SDI2VjMwSDM0VjI3WiIgZmlsbD0iI0E5QTlBOSIvPgo8L3N2Zz4K'}" class="history-image" alt="\${item.title}">
                                 <div class="history-info">
-                                    <div class="history-title-text">\${item.title}</div>
                                     <div>
                                         <span class="history-id">ID: \${item.imageId}</span>
                                         <div class="history-time">\${item.time}</div>
@@ -649,7 +650,7 @@ class ImageDownloadInjector {
                     }
                 }
 
-                // 添加到下载历史
+                // 添加到下载历史 - 修改为去重逻辑
                 addToHistory(data) {
                     const historyList = document.getElementById('historyList');
                     
@@ -658,28 +659,54 @@ class ImageDownloadInjector {
                         historyList.innerHTML = '';
                     }
                     
-                    const historyItem = document.createElement('div');
-                    historyItem.className = 'history-item';
+                    // 检查是否已存在相同图片ID的记录
+                    const existingItems = historyList.querySelectorAll('.history-item');
+                    let existingItem = null;
                     
-                    const time = new Date().toLocaleTimeString();
-                    const truncatedTitle = data.productTitle.length > 25 ? 
-                        data.productTitle.substring(0, 25) + '...' : data.productTitle;
+                    for (let i = 0; i < existingItems.length; i++) {
+                        const idElement = existingItems[i].querySelector('.history-id');
+                        if (idElement && idElement.textContent.includes(data.imageId)) {
+                            existingItem = existingItems[i];
+                            break;
+                        }
+                    }
                     
-                    historyItem.innerHTML = \`
-                        <img src="\${data.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjRTVFN0VCIi8+CjxwYXRoIGQ9Ik0zMCAxOEMzNi42Mjc0IDE4IDQyIDIzLjM3MjYgNDIgMzBDNDIgMzYuNjI3NCAzNi42Mjc0IDQyIDMwIDQyQzIzLjM3MjYgNDIgMTggMzYuNjI3NCAxOCAzMEMxOCAyMy4zNzI2IDIzLjM3MjYgMTggMzAgMThaTTMwIDE1QzIxLjM0MzEgMTUgMTQgMjIuMzQzMSAxNCAzMEMxNCAzNy42NTY5IDIxLjM0MzEgNDUgMzAgNDVDMzguNjU2OSA0NSA0NiAzNy42NTY5IDQ2IDMwQzQ2IDIyLjM0MzEgMzguNjU2OSAxNSAzMCAxNVoiIGZpbGw9IiNBOUE5QTkiLz4KPHBhdGggZD0iTTM0IDI3SDIzVjM0SDI2VjMwSDM0VjI3WiIgZmlsbD0iI0E5QTlBOSIvPgo8L3N2Zz4K'}" class="history-image" alt="\${data.productTitle}">
-                        <div class="history-info">
-                            <div class="history-title-text">\${truncatedTitle}</div>
-                            <div>
-                                <span class="history-id">ID: \${data.imageId}</span>
-                                <div class="history-time">\${time}</div>
+                    // 如果已存在，更新该记录
+                    if (existingItem) {
+                        const timeElement = existingItem.querySelector('.history-time');
+                        const imageElement = existingItem.querySelector('.history-image');
+                        
+                        if (timeElement) timeElement.textContent = new Date().toLocaleTimeString();
+                        if (titleElement) titleElement.textContent = data.productTitle.length > 25 ? 
+                            data.productTitle.substring(0, 25) + '...' : data.productTitle;
+                        if (imageElement && data.imageUrl) imageElement.src = data.imageUrl;
+                        
+                        // 将更新的记录移到最前面
+                        historyList.insertBefore(existingItem, historyList.firstChild);
+                    } else {
+                        // 如果不存在，创建新记录
+                        const historyItem = document.createElement('div');
+                        historyItem.className = 'history-item';
+                        
+                        const time = new Date().toLocaleTimeString();
+                        const truncatedTitle = data.productTitle.length > 25 ? 
+                            data.productTitle.substring(0, 25) + '...' : data.productTitle;
+                        
+                        historyItem.innerHTML = \`
+                            <img src="\${data.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjRTVFN0VCIi8+CjxwYXRoIGQ9Ik0zMCAxOEMzNi42Mjc0IDE4IDQyIDIzLjM3MjYgNDIgMzBDNDIgMzYuNjI3NCAzNi42Mjc0IDQyIDMwIDQyQzIzLjM3MjYgNDIgMTggMzYuNjI3NCAxOCAzMEMxOCAyMy4zNzI2IDIzLjM3MjYgMTggMzAgMThaTTMwIDE1QzIxLjM0MzEgMTUgMTQgMjIuMzQzMSAxNCAzMEMxNCAzNy42NTY5IDIxLjM0MzEgNDUgMzAgNDVDMzguNjU2OSA0NSA0NiAzNy42NTY5IDQ2IDMwQzQ2IDIyLjM0MzEgMzguNjU2OSAxNSAzMCAxNVoiIGZpbGw9IiNBOUE5QTkiLz4KPHBhdGggZD0iTTM0IDI3SDIzVjM0SDI2VjMwSDM0VjI3WiIgZmlsbD0iI0E5QTlBOSIvPgo8L3N2Zz4K'}" class="history-image" alt="\${data.productTitle}">
+                            <div class="history-info">
+                                <div>
+                                    <span class="history-id">ID: \${data.imageId}</span>
+                                    <div class="history-time">\${time}</div>
+                                </div>
                             </div>
-                        </div>
-                    \`;
-                    
-                    historyList.insertBefore(historyItem, historyList.firstChild);
+                        \`;
+                        
+                        historyList.insertBefore(historyItem, historyList.firstChild);
+                    }
                     
                     // 限制历史记录数量为20
-                    if (historyList.children.length > 20) {
+                    while (historyList.children.length > 20) {
                         historyList.removeChild(historyList.lastChild);
                     }
                 }
@@ -836,7 +863,7 @@ class ImageDownloadInjector {
     };
   }
 
-  // 新增：设置懒加载图片观察器
+  // 设置懒加载图片观察器
   setupLazyLoadObserver() {
     // 观察图片的src变化（懒加载常见模式）
     this.lazyLoadObserver = new MutationObserver((mutations) => {
@@ -886,7 +913,7 @@ class ImageDownloadInjector {
       if (!this.hasDownloadButton(imgElement)) {
         this.addDownloadButtonToImage(imgElement, index);
         
-        // 新增：为懒加载图片添加观察
+        // 为懒加载图片添加观察
         if (this.isLazyLoadImage(imgElement)) {
           this.observeLazyLoadImage(imgElement);
         }
@@ -894,7 +921,7 @@ class ImageDownloadInjector {
     });
   }
 
-  // 新增：检查是否为懒加载图片
+  // 检查是否为懒加载图片
   isLazyLoadImage(imgElement) {
     return imgElement.classList.contains('lazyload') || 
            imgElement.hasAttribute('data-src') ||
@@ -902,7 +929,7 @@ class ImageDownloadInjector {
            imgElement.src.includes('loading');
   }
 
-  // 新增：观察懒加载图片的变化
+  // 观察懒加载图片的变化
   observeLazyLoadImage(imgElement) {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
@@ -967,7 +994,7 @@ class ImageDownloadInjector {
     return images;
   }
 
-  // 新增：检查是否为真实图片（不是占位符）
+  // 检查是否为真实图片（不是占位符）
   isRealImage(imgElement) {
     const src = imgElement.src || imgElement.getAttribute('data-src') || '';
     
@@ -1088,7 +1115,7 @@ class ImageDownloadInjector {
       }, (response) => {
         if (response && response.success) {
           this.showMessage('下载成功', 'success');
-          // 添加到下载历史
+          // 添加到下载历史 - 修改为去重逻辑
           this.addToDownloadHistory(imageInfo, imgElement.src);
           // 通知iframe下载成功
           this.sendMessageToIframe({ 
@@ -1134,19 +1161,36 @@ class ImageDownloadInjector {
     }
   }
 
-  // 添加到下载历史
+  // 添加到下载历史 - 修改为去重逻辑
   addToDownloadHistory(imageInfo, imageUrl) {
-    const historyItem = {
-      ...imageInfo,
-      imageUrl: imageUrl,
-      time: new Date().toLocaleTimeString()
-    };
+    // 检查是否已存在相同图片ID的记录
+    const existingIndex = this.downloadHistory.findIndex(item => item.imageId === imageInfo.imageId);
     
-    this.downloadHistory.unshift(historyItem);
+    if (existingIndex !== -1) {
+      // 如果已存在，更新该记录
+      this.downloadHistory[existingIndex] = {
+        ...imageInfo,
+        imageUrl: imageUrl,
+        time: new Date().toLocaleTimeString()
+      };
+      
+      // 将更新的记录移到数组开头
+      const updatedItem = this.downloadHistory.splice(existingIndex, 1)[0];
+      this.downloadHistory.unshift(updatedItem);
+    } else {
+      // 如果不存在，创建新记录
+      const historyItem = {
+        ...imageInfo,
+        imageUrl: imageUrl,
+        time: new Date().toLocaleTimeString()
+      };
+      
+      this.downloadHistory.unshift(historyItem);
+    }
     
     // 限制历史记录数量为20
     if (this.downloadHistory.length > 20) {
-      this.downloadHistory.pop();
+      this.downloadHistory = this.downloadHistory.slice(0, 20);
     }
     
     // 发送更新后的历史记录到iframe
@@ -1190,7 +1234,7 @@ class ImageDownloadInjector {
     };
   }
 
-  // 新增：提取详情页标题
+  // 提取详情页标题
   extractDetailPageTitle() {
     const titleSelectors = [
       'h1',
@@ -1379,7 +1423,7 @@ class ImageDownloadInjector {
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
           shouldInject = true;
           
-          // 新增：为新增的图片元素添加懒加载观察
+          // 为新增的图片元素添加懒加载观察
           mutation.addedNodes.forEach(node => {
             if (node.nodeType === 1) { // 元素节点
               if (node.tagName === 'IMG') {
