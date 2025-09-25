@@ -31,16 +31,7 @@
 
 /* 消息提示样式 */
 .hellorf-message {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 10px 15px;
   background: #4CAF50;
-  color: white;
-  z-index: 10000;
-  border-radius: 4px;
-  font-size: 14px;
-  max-width: 300px;
 }
 
 .hellorf-message.error {
