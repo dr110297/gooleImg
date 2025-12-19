@@ -95,7 +95,8 @@ class BackgroundService {
             // 更新用户信息
             userData.userInfo = {
               creationUserId: result.userId || '',
-              creationUserName: result.userName || ''
+              creationUserName: result.userName || '',
+              imagePlugTypes: result.imagePlugTypes || []
             };
             userData.isLoggedIn = true;
             userData.cookies = cookies;
@@ -150,7 +151,8 @@ class BackgroundService {
         imageId: data.imageId,
         productTitle: data.productTitle,
         creationUserId: userData.userInfo.creationUserId,
-        creationUserName: userData.userInfo.creationUserName
+        creationUserName: userData.userInfo.creationUserName,
+        plugType: data.plugType
       };
       console.log('requestData: ', requestData);
 
@@ -163,18 +165,23 @@ class BackgroundService {
         body: JSON.stringify(requestData)
       });
 
-      if (response.ok) {
-        const result = await response
-        console.log(response)
+      const result = await response.json();
+      console.log('downloadImage result:', result);
+
+      if (response.ok && result.code === 0) {
         sendResponse({ success: true, data: result });
       } else {
-        throw new Error(`HTTP错误: ${response.status}`);
+        console.log(result)
+        sendResponse({
+          success: false,
+          error: result.error.code || `HTTP错误: ${response.status}`
+        });
       }
     } catch (error) {
       console.error('下载图片错误:', error);
-      sendResponse({ 
-        success: false, 
-        error: error.message 
+      sendResponse({
+        success: false,
+        error: error.message
       });
     }
   }

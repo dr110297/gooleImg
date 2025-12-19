@@ -8,6 +8,7 @@ class ImageDownloadInjector {
     this.isPanelVisible = false;
     this.panelButton = null;
     this.downloadHistory = [];
+    this.imagePlugTypes = [];
     this.init();
   }
 
@@ -22,21 +23,32 @@ class ImageDownloadInjector {
   start() {
     this.setupRequestInterceptor();
     this.injectPanelButton();
+    this.loadImagePlugTypes(); // 初始化时获取类型列表
     this.injectDownloadButtons();
     this.setupMutationObserver();
     this.setupLazyLoadObserver();
     this.setupGlobalClickListener();
     this.loadDownloadHistory();
-    
+
     // 监听来自iframe的消息
     window.addEventListener('message', (event) => {
       this.handleIframeMessage(event);
     });
-    
+
     // 延迟检查，确保所有图片都有机会加载
     setTimeout(() => {
       this.injectDownloadButtons();
     }, 1000);
+  }
+
+  // 加载图片类型列表
+  loadImagePlugTypes() {
+    chrome.runtime.sendMessage({ action: 'checkLoginStatus' }, (response) => {
+      if (response && response.userInfo && response.userInfo.imagePlugTypes) {
+        this.imagePlugTypes = response.userInfo.imagePlugTypes;
+        this.updateAllSelectOptions();
+      }
+    });
   }
 
   // 注入控制面板按钮
@@ -168,16 +180,40 @@ class ImageDownloadInjector {
   // 为iframe检查登录状态
   async checkLoginStatusForIframe() {
     chrome.runtime.sendMessage({ action: 'checkLoginStatus' }, (response) => {
+      // 存储 imagePlugTypes
+      if (response.userInfo && response.userInfo.imagePlugTypes) {
+        this.imagePlugTypes = response.userInfo.imagePlugTypes;
+        this.updateAllSelectOptions();
+      }
+
       this.sendMessageToIframe({
         action: 'loginStatus',
         status: response
       });
-      
+
       // 同时发送下载历史
       this.sendMessageToIframe({
         action: 'downloadHistory',
         history: this.downloadHistory
       });
+    });
+  }
+
+  // 更新所有下拉选择框的选项
+  updateAllSelectOptions() {
+    const selects = document.querySelectorAll('.hellorf-type-select');
+    selects.forEach(select => {
+      const currentValue = select.value;
+      select.innerHTML = '<option value="">请选择类型</option>';
+      this.imagePlugTypes.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type.key;
+        option.textContent = type.value;
+        select.appendChild(option);
+      });
+      if (currentValue) {
+        select.value = currentValue;
+      }
     });
   }
 
@@ -411,21 +447,79 @@ class ImageDownloadInjector {
       container.style.position = 'relative';
     }
 
+    // 创建包装容器
+    const wrapper = document.createElement('div');
+    wrapper.className = 'hellorf-download-wrapper';
+    wrapper.style.position = 'absolute';
+    wrapper.style.top = '10px';
+    wrapper.style.right = '10px';
+    wrapper.style.zIndex = '1000';
+    wrapper.style.display = 'flex';
+    wrapper.style.alignItems = 'center';
+    wrapper.style.gap = '5px';
+
+    // 创建下拉选择框
+    const typeSelect = document.createElement('select');
+    typeSelect.className = 'hellorf-type-select';
+    typeSelect.dataset.imageIndex = index;
+    typeSelect.innerHTML = '<option value="">请选择类型</option>';
+
+    // 填充选项
+    this.imagePlugTypes.forEach(type => {
+      const option = document.createElement('option');
+      option.value = type.key;
+      option.textContent = type.value;
+      typeSelect.appendChild(option);
+    });
+
+    this.styleTypeSelect(typeSelect);
+
+    typeSelect.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+
     const downloadBtn = document.createElement('button');
     downloadBtn.className = 'hellorf-download-btn';
     downloadBtn.innerHTML = '⬇️';
     downloadBtn.title = '下载图片';
     downloadBtn.dataset.imageIndex = index;
 
-    this.positionDownloadButton(container, downloadBtn);
+    this.styleDownloadButton(downloadBtn);
 
     downloadBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      this.handleDownloadClick(imgElement, downloadBtn);
+      this.handleDownloadClick(imgElement, downloadBtn, typeSelect);
     });
 
-    container.appendChild(downloadBtn);
+    wrapper.appendChild(typeSelect);
+    wrapper.appendChild(downloadBtn);
+    container.appendChild(wrapper);
+  }
+
+  // 样式化下拉选择框
+  styleTypeSelect(select) {
+    select.style.background = 'rgba(0,0,0,0.7)';
+    select.style.color = 'white';
+    select.style.border = 'none';
+    select.style.borderRadius = '4px';
+    select.style.padding = '5px 8px';
+    select.style.cursor = 'pointer';
+    select.style.fontSize = '12px';
+    select.style.maxWidth = '120px';
+    select.style.outline = 'none';
+  }
+
+  // 样式化下载按钮
+  styleDownloadButton(button) {
+    button.style.background = 'rgba(0,0,0,0.7)';
+    button.style.color = 'white';
+    button.style.border = 'none';
+    button.style.borderRadius = '4px';
+    button.style.padding = '5px 8px';
+    button.style.cursor = 'pointer';
+    button.style.fontSize = '18px';
   }
 
   // 定位下载按钮
@@ -462,8 +556,15 @@ class ImageDownloadInjector {
   }
 
   // 处理下载点击
-  async handleDownloadClick(imgElement, button) {
+  async handleDownloadClick(imgElement, button, typeSelect) {
     try {
+      // 检查是否选择了类型
+      const plugType = typeSelect ? typeSelect.value : '';
+      if (!plugType) {
+        this.showMessage('请先选择类型', 'error');
+        return;
+      }
+
       button.disabled = true;
       button.innerHTML = '⏳';
 
@@ -472,15 +573,18 @@ class ImageDownloadInjector {
 
       if (!imageInfo) {
         this.showMessage('无法获取图片信息', 'error');
-        this.sendMessageToIframe({ 
-          action: 'downloadStatus', 
-          status: 'error', 
-          message: '无法获取图片信息' 
+        this.sendMessageToIframe({
+          action: 'downloadStatus',
+          status: 'error',
+          message: '无法获取图片信息'
         });
         button.innerHTML = '⬇️';
         button.disabled = false;
         return;
       }
+
+      // 添加 plugType 到 imageInfo
+      imageInfo.plugType = plugType;
 
       chrome.runtime.sendMessage({
         action: 'downloadImage',
