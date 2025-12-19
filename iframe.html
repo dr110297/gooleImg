@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Hellorf控制面板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            overflow: hidden;
+        }
+        
+        .panel-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+        
+        .panel-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 12px 12px 0 0;
+            flex-shrink: 0;
+        }
+        
+        .header-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .icon-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .icon-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+        
+        .panel-content {
+            flex: 1;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        
+        .status-section {
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+        }
+        
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .status-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-online {
+            background: #4CAF50;
+        }
+        
+        .status-offline {
+            background: #f44336;
+        }
+        
+        .user-info {
+            background: #f1f3f4;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 12px;
+            display: none;
+        }
+        
+        .user-info-item {
+            margin-bottom: 4px;
+        }
+        
+        .user-info-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .action-buttons {
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .btn:hover {
+            background: #3367d6;
+        }
+        
+        .btn-login {
+            background: #34a853;
+        }
+        
+        .btn-login:hover {
+            background: #2d9248;
+        }
+        
+        .btn-logout {
+            background: #ea4335;
+        }
+        
+        .btn-logout:hover {
+            background: #d33426;
+        }
+        
+        .history-section {
+            flex: 1;
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+        
+        .history-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+        
+        .history-container {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+        
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s;
+            height: 80px;
+            box-sizing: border-box;
+        }
+        
+        .history-item:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .history-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 6px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #e0e0e0;
+        }
+        
+        .history-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+        }
+        
+        .history-id {
+            font-size: 12px;
+            color: #777;
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .history-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+        
+        .empty-history {
+            text-align: center;
+            padding: 40px 0;
+            color: #999;
+            font-size: 13px;
+        }
+        
+        .message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        
+        .message.show {
+            opacity: 1;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="panel-container">
+        <div class="panel-header">
+            <div class="header-title">图片下载器</div>
+            <div class="header-controls">
+                <button class="icon-btn" id="refreshBtn" title="刷新状态">↻</button>
+                <button class="icon-btn" id="closeBtn" title="关闭面板">×</button>
+            </div>
+        </div>
+        
+        <div class="panel-content">
+            <div class="status-section">
+                <div class="status-header">
+                    <div class="status-title">账户状态</div>
+                    <div class="status-indicator">
+                        <div id="statusDot" class="status-dot status-offline"></div>
+                        <span id="statusText">检查中...</span>
+                    </div>
+                </div>
+                
+                <div id="userInfo" class="user-info">
+                    <div class="user-info-item"><strong>用户ID:</strong> <span id="userId"></span></div>
+                    <div class="user-info-item"><strong>用户名:</strong> <span id="userName"></span></div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn" id="checkStatusBtn">
+                    <span>↻</span> 检查登录状态
+                </button>
+                <button class="btn btn-login" id="loginBtn">
+                    <span>🔑</span> 登录账号
+                </button>
+            </div>
+            
+            <div class="history-section">
+                <div class="history-title">最近下载</div>
+                <div class="history-container">
+                    <div class="history-list" id="historyList">
+                        <div class="empty-history">暂无下载记录</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="message" id="message"></div>
+
+    <script src="iframe.js"></script>
+</body>
+</html>

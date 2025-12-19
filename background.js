@@ -80,7 +80,7 @@ class BackgroundService {
         console.log('token: ', token);
 
         try {
-          // 请求 loginToken 接口
+          // 请求获取login Token 接口
           const response = await fetch('http://117.24.14.3:1012/api/app/products/productimagelibrary/getlogininfobyplug', {
             method: 'POST',
             headers: {

@@ -49,7 +49,7 @@ class ImageDownloadInjector {
 
     this.panelButton = document.createElement('button');
     this.panelButton.className = 'hellorf-panel-btn';
-    this.panelButton.innerHTML = '📁 Hellorf下载器';
+    this.panelButton.innerHTML = '📁 图片下载器';
     this.panelButton.title = '打开下载控制面板';
     
     this.stylePanelButton(this.panelButton);
@@ -111,602 +111,31 @@ class ImageDownloadInjector {
       this.iframe.style.display = 'none';
     }
     this.isPanelVisible = false;
-    this.panelButton.innerHTML = '📁 Hellorf下载器';
+    this.panelButton.innerHTML = '📁 图片下载器';
     this.panelButton.style.background = '#4285f4';
   }
 
   // 创建iframe 
   createIframe() {
     this.iframe = document.createElement('iframe');
+    console.log('121行iframe',this.iframe)
     this.iframe.id = 'hellorf-control-panel';
-    this.iframe.srcdoc = this.getIframeHTML();
+    this.iframe.src = chrome.runtime.getURL('iframe.html');
     
-    // 设置iframe样式 - 修改为自适应高度
+    // 设置iframe样式
     this.iframe.style.position = 'fixed';
     this.iframe.style.top = '60px';
     this.iframe.style.right = '20px';
     this.iframe.style.width = '420px';
-    this.iframe.style.height = '950px'
+    this.iframe.style.height = '950px';
     this.iframe.style.border = 'none';
     this.iframe.style.borderRadius = '12px';
     this.iframe.style.boxShadow = '0 8px 30px rgba(0,0,0,0.3)';
     this.iframe.style.zIndex = '9999';
     this.iframe.style.backgroundColor = 'white';
     this.iframe.style.display = 'none';
-    this.iframe.style.overflow = 'hidden'; // 隐藏iframe自身的滚动条
-    
+    this.iframe.style.overflow = 'hidden';
     document.body.appendChild(this.iframe);
-  }
-
-  // 生成iframe HTML内容 - 修改为自适应高度
-  getIframeHTML() {
-    return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-            
-            html, body {
-                width: 100%;
-                height: 100%;
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: #f8f9fa;
-                color: #333;
-                overflow: hidden;
-            }
-            
-            .panel-container {
-                width: 100%;
-                height: 100%;
-                display: flex;
-                flex-direction: column;
-                background: white;
-            }
-            
-            .panel-header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 15px 20px;
-                position: relative;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                border-radius: 12px 12px 0 0;
-                flex-shrink: 0;
-            }
-            
-            .header-title {
-                font-size: 16px;
-                font-weight: 600;
-            }
-            
-            .header-controls {
-                display: flex;
-                gap: 8px;
-            }
-            
-            .icon-btn {
-                background: rgba(255,255,255,0.2);
-                border: none;
-                color: white;
-                width: 28px;
-                height: 28px;
-                border-radius: 50%;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 14px;
-                transition: all 0.3s;
-            }
-            
-            .icon-btn:hover {
-                background: rgba(255,255,255,0.3);
-                transform: scale(1.1);
-            }
-            
-            .panel-content {
-                flex: 1;
-                padding: 0;
-                overflow: hidden;
-                display: flex;
-                flex-direction: column;
-                min-height: 0; /* 关键：允许内容区域收缩 */
-            }
-            
-            .status-section {
-                background: white;
-                padding: 15px 20px;
-                border-bottom: 1px solid #eee;
-                flex-shrink: 0;
-            }
-            
-            .status-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 10px;
-            }
-            
-            .status-title {
-                font-size: 14px;
-                font-weight: 600;
-                color: #555;
-            }
-            
-            .status-indicator {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-size: 13px;
-            }
-            
-            .status-dot {
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-            }
-            
-            .status-online {
-                background: #4CAF50;
-            }
-            
-            .status-offline {
-                background: #f44336;
-            }
-            
-            .user-info {
-                background: #f1f3f4;
-                padding: 10px;
-                border-radius: 6px;
-                margin-top: 10px;
-                font-size: 12px;
-                display: none;
-            }
-            
-            .user-info-item {
-                margin-bottom: 4px;
-            }
-            
-            .user-info-item:last-child {
-                margin-bottom: 0;
-            }
-            
-            .action-buttons {
-                padding: 15px 20px;
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-                border-bottom: 1px solid #eee;
-                flex-shrink: 0;
-            }
-            
-            .btn {
-                padding: 10px 15px;
-                background: #4285f4;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                cursor: pointer;
-                transition: background 0.3s;
-                font-size: 13px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 6px;
-            }
-            
-            .btn:hover {
-                background: #3367d6;
-            }
-            
-            .btn-login {
-                background: #34a853;
-            }
-            
-            .btn-login:hover {
-                background: #2d9248;
-            }
-            
-            .btn-logout {
-                background: #ea4335;
-            }
-            
-            .btn-logout:hover {
-                background: #d33426;
-            }
-            
-            .history-section {
-                flex: 1;
-                padding: 15px 20px;
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-                min-height: 0; /* 关键：允许历史区域收缩 */
-            }
-            
-            .history-title {
-                font-size: 14px;
-                font-weight: 600;
-                color: #555;
-                margin-bottom: 12px;
-                flex-shrink: 0;
-            }
-            
-            .history-container {
-                flex: 1;
-                overflow-y: auto;
-                min-height: 0; /* 关键：允许容器收缩 */
-            }
-            
-            .history-list {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .history-item {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                padding: 10px;
-                background: #f8f9fa;
-                border-radius: 8px;
-                transition: all 0.3s;
-                height: 80px;
-                box-sizing: border-box;
-            }
-            
-            .history-item:hover {
-                background: #e9ecef;
-                transform: translateY(-1px);
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            }
-            
-            .history-image {
-                width: 60px;
-                height: 60px;
-                border-radius: 6px;
-                object-fit: cover;
-                flex-shrink: 0;
-                background: #e0e0e0;
-            }
-            
-            .history-info {
-                flex: 1;
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                height: 100%;
-            }
-            
-            .history-id {
-                font-size: 12px;
-                color: #777;
-                background: #e9ecef;
-                padding: 2px 6px;
-                border-radius: 4px;
-                display: inline-block;
-            }
-            
-            .history-time {
-                font-size: 11px;
-                color: #999;
-                margin-top: 4px;
-            }
-            
-            .empty-history {
-                text-align: center;
-                padding: 40px 0;
-                color: #999;
-                font-size: 13px;
-            }
-            
-            .message {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: rgba(0,0,0,0.8);
-                color: white;
-                padding: 12px 24px;
-                border-radius: 6px;
-                font-size: 14px;
-                z-index: 100;
-                opacity: 0;
-                transition: opacity 0.3s;
-                pointer-events: none;
-            }
-            
-            .message.show {
-                opacity: 1;
-            }
-            
-            .hidden {
-                display: none;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="panel-container">
-            <div class="panel-header">
-                <div class="header-title">Hellorf图片下载器</div>
-                <div class="header-controls">
-                    <button class="icon-btn" id="refreshBtn" title="刷新状态">↻</button>
-                    <button class="icon-btn" id="closeBtn" title="关闭面板">×</button>
-                </div>
-            </div>
-            
-            <div class="panel-content">
-                <div class="status-section">
-                    <div class="status-header">
-                        <div class="status-title">账户状态</div>
-                        <div class="status-indicator">
-                            <div id="statusDot" class="status-dot status-offline"></div>
-                            <span id="statusText">检查中...</span>
-                        </div>
-                    </div>
-                    
-                    <div id="userInfo" class="user-info">
-                        <div class="user-info-item"><strong>用户ID:</strong> <span id="userId"></span></div>
-                        <div class="user-info-item"><strong>用户名:</strong> <span id="userName"></span></div>
-                    </div>
-                </div>
-                
-                <div class="action-buttons">
-                    <button class="btn" id="checkStatusBtn">
-                        <span>↻</span> 检查登录状态
-                    </button>
-                    <button class="btn btn-login" id="loginBtn">
-                        <span>🔑</span> 登录账号
-                    </button>
-                </div>
-                
-                <div class="history-section">
-                    <div class="history-title">最近下载</div>
-                    <div class="history-container">
-                        <div class="history-list" id="historyList">
-                            <div class="empty-history">暂无下载记录</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="message" id="message"></div>
-
-        <script>
-            class IframePanel {
-                constructor() {
-                    this.init();
-                }
-
-                init() {
-                    this.bindEvents();
-                    this.checkLoginStatus();
-                }
-
-                bindEvents() {
-                    document.getElementById('closeBtn').addEventListener('click', () => {
-                        this.closePanel();
-                    });
-
-                    document.getElementById('refreshBtn').addEventListener('click', () => {
-                        this.checkLoginStatus();
-                    });
-
-                    document.getElementById('checkStatusBtn').addEventListener('click', () => {
-                        this.checkLoginStatus();
-                    });
-
-                    document.getElementById('loginBtn').addEventListener('click', () => {
-                        this.login();
-                    });
-
-                    // 监听来自父窗口的消息
-                    window.addEventListener('message', (event) => {
-                        this.handleParentMessage(event);
-                    });
-                }
-
-                // 关闭面板
-                closePanel() {
-                    window.parent.postMessage({ action: 'closePanel' }, '*');
-                }
-
-                // 检查登录状态
-                checkLoginStatus() {
-                    window.parent.postMessage({ action: 'checkLoginStatus' }, '*');
-                }
-
-                // 登录
-                login() {
-                    window.parent.postMessage({ action: 'login' }, '*');
-                }
-
-                // 处理来自父窗口的消息
-                handleParentMessage(event) {
-                    const message = event.data;
-                    
-                    switch (message.action) {
-                        case 'loginStatus':
-                            this.updateLoginStatus(message.status);
-                            break;
-                        case 'userInfoUpdated':
-                            this.showMessage(message.success ? '用户信息更新成功' : '更新失败', message.success);
-                            if (message.success) {
-                                this.checkLoginStatus();
-                            }
-                            break;
-                        // case 'downloadStatus':
-                        //     this.handleDownloadStatus(message);
-                        //     break;
-                        case 'downloadHistory':
-                            this.updateDownloadHistory(message.history);
-                            break;
-                        case 'panelOpened':
-                            this.checkLoginStatus();
-                            break;
-                    }
-                }
-
-                // 更新登录状态显示
-                updateLoginStatus(status) {
-                    const dot = document.getElementById('statusDot');
-                    const statusText = document.getElementById('statusText');
-                    const userInfo = document.getElementById('userInfo');
-                    const loginBtn = document.getElementById('loginBtn');
-
-                    if (status.isLoggedIn) {
-                        dot.className = 'status-dot status-online';
-                        statusText.textContent = '已登录';
-                        userInfo.style.display = 'block';
-                        document.getElementById('userId').textContent = status.userInfo.creationUserId || '未设置';
-                        document.getElementById('userName').textContent = status.userInfo.creationUserName || '未设置';
-                        loginBtn.innerHTML = '<span>🔄</span> 重新登录';
-                        loginBtn.className = 'btn btn-logout';
-                    } else {
-                        dot.className = 'status-dot status-offline';
-                        statusText.textContent = '未登录';
-                        userInfo.style.display = 'none';
-                        loginBtn.innerHTML = '<span>🔑</span> 登录账号';
-                        loginBtn.className = 'btn btn-login';
-                    }
-                }
-
-                // 处理下载状态
-                // handleDownloadStatus(message) {
-                //     switch (message.status) {
-                //         case 'success':
-                //             this.showMessage('下载成功', true);
-                //             this.addToHistory(message.data);
-                //             break;
-                //         case 'error':
-                //             this.showMessage('下载失败: ' + message.message, false);
-                //             break;
-                //         case 'requiresLogin':
-                //             this.showMessage('请先登录', false);
-                //             break;
-                //     }
-                // }
-
-                // 更新下载历史
-                updateDownloadHistory(history) {
-                    const historyList = document.getElementById('historyList');
-                    
-                    if (history && history.length > 0) {
-                        // 清空现有内容
-                        historyList.innerHTML = '';
-                        
-                        // 添加历史项
-                        history.forEach(item => {
-                            const historyItem = document.createElement('div');
-                            historyItem.className = 'history-item';
-                            
-                            historyItem.innerHTML = \`
-                                <img src="\${item.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjRTVFN0VCIi8+CjxwYXRoIGQ9Ik0zMCAxOEMzNi42Mjc0IDE4IDQyIDIzLjM3MjYgNDIgMzBDNDIgMzYuNjI3NCAzNi42Mjc0IDQyIDMwIDQyQzIzLjM3MjYgNDIgMTggMzYuNjI3NCAxOCAzMEMxOCAyMy4zNzI2IDIzLjM3MjYgMTggMzAgMThaTTMwIDE1QzIxLjM0MzEgMTUgMTQgMjIuMzQzMSAxNCAzMEMxNCAzNy42NTY5IDIxLjM0MzEgNDUgMzAgNDVDMzguNjU2OSA0NSA0NiAzNy42NTY5IDQ2IDMwQzQ2IDIyLjM0MzEgMzguNjU2OSAxNSAzMCAxNVoiIGZpbGw9IiNBOUE5QTkiLz4KPHBhdGggZD0iTTM0IDI3SDIzVjM0SDI2VjMwSDM0VjI3WiIgZmlsbD0iI0E5QTlBOSIvPgo8L3N2Zz4K'}" class="history-image" alt="\${item.title}">
-                                <div class="history-info">
-                                    <div>
-                                        <span class="history-id">ID: \${item.imageId}</span>
-                                        <div class="history-time">\${item.time}</div>
-                                    </div>
-                                </div>
-                            \`;
-                            
-                            historyList.appendChild(historyItem);
-                        });
-                    } else {
-                        historyList.innerHTML = '<div class="empty-history">暂无下载记录</div>';
-                    }
-                }
-
-                // 添加到下载历史 - 修改为去重逻辑
-                addToHistory(data) {
-                    const historyList = document.getElementById('historyList');
-                    
-                    // 如果当前显示"暂无下载记录"，清除它
-                    if (historyList.querySelector('.empty-history')) {
-                        historyList.innerHTML = '';
-                    }
-                    
-                    // 检查是否已存在相同图片ID的记录
-                    const existingItems = historyList.querySelectorAll('.history-item');
-                    let existingItem = null;
-                    
-                    for (let i = 0; i < existingItems.length; i++) {
-                        const idElement = existingItems[i].querySelector('.history-id');
-                        if (idElement && idElement.textContent.includes(data.imageId)) {
-                            existingItem = existingItems[i];
-                            break;
-                        }
-                    }
-                    
-                    // 如果已存在，更新该记录
-                    if (existingItem) {
-                        const timeElement = existingItem.querySelector('.history-time');
-                        const imageElement = existingItem.querySelector('.history-image');
-                        
-                        if (timeElement) timeElement.textContent = new Date().toLocaleTimeString();
-                        if (titleElement) titleElement.textContent = data.productTitle.length > 25 ? 
-                            data.productTitle.substring(0, 25) + '...' : data.productTitle;
-                        if (imageElement && data.imageUrl) imageElement.src = data.imageUrl;
-                        
-                        // 将更新的记录移到最前面
-                        historyList.insertBefore(existingItem, historyList.firstChild);
-                    } else {
-                        // 如果不存在，创建新记录
-                        const historyItem = document.createElement('div');
-                        historyItem.className = 'history-item';
-                        
-                        const time = new Date().toLocaleTimeString();
-                        const truncatedTitle = data.productTitle.length > 25 ? 
-                            data.productTitle.substring(0, 25) + '...' : data.productTitle;
-                        
-                        historyItem.innerHTML = \`
-                            <img src="\${data.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjRTVFN0VCIi8+CjxwYXRoIGQ9Ik0zMCAxOEMzNi42Mjc0IDE4IDQyIDIzLjM3MjYgNDIgMzBDNDIgMzYuNjI3NCAzNi42Mjc0IDQyIDMwIDQyQzIzLjM3MjYgNDIgMTggMzYuNjI3NCAxOCAzMEMxOCAyMy4zNzI2IDIzLjM3MjYgMTggMzAgMThaTTMwIDE1QzIxLjM0MzEgMTUgMTQgMjIuMzQzMSAxNCAzMEMxNCAzNy42NTY5IDIxLjM0MzEgNDUgMzAgNDVDMzguNjU2OSA0NSA0NiAzNy42NTY5IDQ2IDMwQzQ2IDIyLjM0MzEgMzguNjU2OSAxNSAzMCAxNVoiIGZpbGw9IiNBOUE5QTkiLz4KPHBhdGggZD0iTTM0IDI3SDIzVjM0SDI2VjMwSDM0VjI3WiIgZmlsbD0iI0E5QTlBOSIvPgo8L3N2Zz4K'}" class="history-image" alt="\${data.productTitle}">
-                            <div class="history-info">
-                                <div>
-                                    <span class="history-id">ID: \${data.imageId}</span>
-                                    <div class="history-time">\${time}</div>
-                                </div>
-                            </div>
-                        \`;
-                        
-                        historyList.insertBefore(historyItem, historyList.firstChild);
-                    }
-                    
-                    // 限制历史记录数量为20
-                    while (historyList.children.length > 20) {
-                        historyList.removeChild(historyList.lastChild);
-                    }
-                }
-
-                // 显示消息
-                showMessage(text, isSuccess) {
-                    const messageEl = document.getElementById('message');
-                    messageEl.textContent = text;
-                    messageEl.style.background = isSuccess ? 'rgba(76, 175, 80, 0.9)' : 'rgba(244, 67, 54, 0.9)';
-                    messageEl.classList.add('show');
-                    
-                    setTimeout(() => {
-                        messageEl.classList.remove('show');
-                    }, 2000);
-                }
-            }
-
-            // 初始化iframe面板
-            new IframePanel();
-        </script>
-    </body>
-    </html>
-    `;
   }
 
   // 发送消息到iframe
@@ -756,7 +185,6 @@ class ImageDownloadInjector {
   async redirectToLogin() {
     chrome.runtime.sendMessage({ action: 'loginRedirect' });
   }
-
 
   // 加载下载历史
   loadDownloadHistory() {
@@ -827,18 +255,15 @@ class ImageDownloadInjector {
 
   // 设置懒加载图片观察器
   setupLazyLoadObserver() {
-    // 观察图片的src变化（懒加载常见模式）
     this.lazyLoadObserver = new MutationObserver((mutations) => {
       let shouldCheckImages = false;
       
       mutations.forEach((mutation) => {
-        // 检查属性变化（特别是src属性）
         if (mutation.type === 'attributes' && 
             (mutation.attributeName === 'src' || mutation.attributeName === 'data-src')) {
           shouldCheckImages = true;
         }
         
-        // 检查类名变化（懒加载图片加载后通常会改变类名）
         if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
           const target = mutation.target;
           if (target.tagName === 'IMG' && 
@@ -851,14 +276,12 @@ class ImageDownloadInjector {
       });
 
       if (shouldCheckImages) {
-        // 延迟检查，确保图片已加载完成
         setTimeout(() => {
           this.injectDownloadButtons();
         }, 100);
       }
     });
 
-    // 观察所有图片元素的属性变化
     const images = document.querySelectorAll('img');
     images.forEach(img => {
       this.lazyLoadObserver.observe(img, {
@@ -875,7 +298,6 @@ class ImageDownloadInjector {
       if (!this.hasDownloadButton(imgElement)) {
         this.addDownloadButtonToImage(imgElement, index);
         
-        // 为懒加载图片添加观察
         if (this.isLazyLoadImage(imgElement)) {
           this.observeLazyLoadImage(imgElement);
         }
@@ -897,7 +319,6 @@ class ImageDownloadInjector {
       mutations.forEach((mutation) => {
         if (mutation.type === 'attributes' && 
             (mutation.attributeName === 'src' || mutation.attributeName === 'class')) {
-          // 图片已加载，重新检查并注入按钮
           setTimeout(() => {
             if (this.isVisibleImage(imgElement) && !this.hasDownloadButton(imgElement)) {
               this.addDownloadButtonToImage(imgElement, 0);
@@ -917,9 +338,7 @@ class ImageDownloadInjector {
   findImageElements() {
     const isDetailPage = window.location.href.includes('/show/');
     
-    // 详情页和列表页使用不同的选择器
     const selectors = isDetailPage ? [
-      // 详情页选择器
       '#page-content img',
       '.main-image img',
       '.detail img',
@@ -930,7 +349,6 @@ class ImageDownloadInjector {
       '.image-preview img',
       '.gallery img'
     ] : [
-      // 列表页选择器
       'img[src*="hellorf"]',
       'img[data-src*="hellorf"]',
       '.image-item img',
@@ -946,7 +364,6 @@ class ImageDownloadInjector {
     selectors.forEach(selector => {
       const elements = document.querySelectorAll(selector);
       elements.forEach(el => {
-        // 检查图片是否已加载（不是占位符）
         if (this.isRealImage(el) && this.isVisibleImage(el) && !images.includes(el)) {
           images.push(el);
         }
@@ -960,7 +377,6 @@ class ImageDownloadInjector {
   isRealImage(imgElement) {
     const src = imgElement.src || imgElement.getAttribute('data-src') || '';
     
-    // 排除常见的占位符URL
     const placeholderPatterns = [
       'placeholder',
       'loading',
@@ -970,14 +386,13 @@ class ImageDownloadInjector {
     ];
     
     return !placeholderPatterns.some(pattern => src.includes(pattern)) && 
-           src.length > 10; // 确保不是空或极短的URL
+           src.length > 10;
   }
 
   // 检查是否为可见图片
   isVisibleImage(imgElement) {
-    // 详情页和列表页使用不同的尺寸标准
     const isDetailPage = window.location.href.includes('/show/');
-    const minSize = isDetailPage ? 200 : 100; // 详情页图片通常更大
+    const minSize = isDetailPage ? 200 : 100;
     
     return imgElement.offsetWidth > minSize && imgElement.offsetHeight > minSize;
   }
@@ -992,7 +407,6 @@ class ImageDownloadInjector {
     const container = imgElement.parentElement;
     if (!container) return;
 
-    // 确保容器有相对定位
     if (window.getComputedStyle(container).position === 'static') {
       container.style.position = 'relative';
     }
@@ -1019,7 +433,6 @@ class ImageDownloadInjector {
     const isDetailPage = window.location.href.includes('/show/');
     
     if (isDetailPage) {
-      // 详情页按钮样式
       button.style.position = 'absolute';
       button.style.top = '10px';
       button.style.right = '10px';
@@ -1034,7 +447,6 @@ class ImageDownloadInjector {
       button.style.fontWeight = 'bold';
       button.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
     } else {
-      // 列表页按钮样式
       button.style.position = 'absolute';
       button.style.top = '10px';
       button.style.right = '10px';
@@ -1060,7 +472,6 @@ class ImageDownloadInjector {
 
       if (!imageInfo) {
         this.showMessage('无法获取图片信息', 'error');
-        // 通知iframe下载失败
         this.sendMessageToIframe({ 
           action: 'downloadStatus', 
           status: 'error', 
@@ -1077,9 +488,7 @@ class ImageDownloadInjector {
       }, (response) => {
         if (response && response.success) {
           this.showMessage('下载成功', 'success');
-          // 添加到下载历史 - 修改为去重逻辑
           this.addToDownloadHistory(imageInfo, imgElement.src);
-          // 通知iframe下载成功
           this.sendMessageToIframe({ 
             action: 'downloadStatus', 
             status: 'success', 
@@ -1090,7 +499,6 @@ class ImageDownloadInjector {
           });
         } else if (response && response.requiresLogin) {
           this.showLoginPrompt();
-          // 通知iframe需要登录
           this.sendMessageToIframe({ 
             action: 'downloadStatus', 
             status: 'requiresLogin' 
@@ -1098,7 +506,6 @@ class ImageDownloadInjector {
         } else {
           console.log(response);
           this.showMessage(response?.error || '下载失败', 'error');
-          // 通知iframe下载失败
           this.sendMessageToIframe({ 
             action: 'downloadStatus', 
             status: 'error', 
@@ -1114,7 +521,6 @@ class ImageDownloadInjector {
       console.error('下载处理错误:', error);
       button.innerHTML = '⬇️';
       button.disabled = false;
-      // 通知iframe下载失败
       this.sendMessageToIframe({ 
         action: 'downloadStatus', 
         status: 'error', 
@@ -1123,24 +529,20 @@ class ImageDownloadInjector {
     }
   }
 
-  // 添加到下载历史 - 修改为去重逻辑
+  // 添加到下载历史 - 去重
   addToDownloadHistory(imageInfo, imageUrl) {
-    // 检查是否已存在相同图片ID的记录
     const existingIndex = this.downloadHistory.findIndex(item => item.imageId === imageInfo.imageId);
     
     if (existingIndex !== -1) {
-      // 如果已存在，更新该记录
       this.downloadHistory[existingIndex] = {
         ...imageInfo,
         imageUrl: imageUrl,
         time: new Date().toLocaleTimeString()
       };
       
-      // 将更新的记录移到数组开头
       const updatedItem = this.downloadHistory.splice(existingIndex, 1)[0];
       this.downloadHistory.unshift(updatedItem);
     } else {
-      // 如果不存在，创建新记录
       const historyItem = {
         ...imageInfo,
         imageUrl: imageUrl,
@@ -1150,18 +552,16 @@ class ImageDownloadInjector {
       this.downloadHistory.unshift(historyItem);
     }
     
-    // 限制历史记录数量为20
     if (this.downloadHistory.length > 20) {
       this.downloadHistory = this.downloadHistory.slice(0, 20);
     }
     
-    // 发送更新后的历史记录到iframe
     this.sendMessageToIframe({
       action: 'downloadHistory',
       history: this.downloadHistory
     });
   }
-
+  // 获取点击图片的模块信息
   async extractImageInfo(imgElement) {
     const container = imgElement.closest('a, [class*="item"], [class*="card"], #page-content');
     console.log('container', container, container?.href);
@@ -1169,12 +569,10 @@ class ImageDownloadInjector {
     let imageId = this.extractImageIdFromUrl(container?.href || window.location.href || '');
     let title = null;
 
-    // 详情页直接提取信息，不需要iframe
     const isDetailPage = window.location.href.includes('/show/');
     if (isDetailPage) {
       title = this.extractDetailPageTitle();
     } else {
-      // 列表页使用iframe获取详情
       const detailInfo = await this.getImageDetailsBySimulatedClick(imgElement);
       console.log('detailInfo', detailInfo);
       if (detailInfo) {
@@ -1216,7 +614,6 @@ class ImageDownloadInjector {
       }
     }
     
-    // 尝试从meta标签获取标题
     const metaTitle = document.querySelector('meta[property="og:title"]');
     if (metaTitle && metaTitle.getAttribute('content')) {
       return metaTitle.getAttribute('content').substring(0, 200);
@@ -1224,7 +621,7 @@ class ImageDownloadInjector {
     
     return null;
   }
-
+  
   async getImageDetailsBySimulatedClick(imgElement) {
     return new Promise((resolve) => {
       const linkElement = imgElement.closest('a');
@@ -1243,7 +640,6 @@ class ImageDownloadInjector {
           document.body.removeChild(iframe);
         }
       };
-
       iframe.onload = () => {
         try {
           const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
@@ -1300,28 +696,6 @@ class ImageDownloadInjector {
     return idMatch ? idMatch[1] : null;
   }
 
-  // 提取图片标题
-  extractImageTitle(container, imgElement) {
-    if (imgElement.alt && imgElement.alt !== '') {
-      return imgElement.alt;
-    }
-
-    const titleSelectors = [
-      '.title', '.name', '.description',
-      '[class*="title"]', '[class*="name"]',
-      'h1', 'h2', 'h3', 'h4'
-    ];
-
-    for (const selector of titleSelectors) {
-      const titleElement = container ? container.querySelector(selector) : null;
-      if (titleElement && titleElement.textContent.trim()) {
-        return titleElement.textContent.trim().substring(0, 200);
-      }
-    }
-
-    return null;
-  }
-
   // 备用图片信息提取
   fallbackImageInfo(imgElement) {
     const src = imgElement.src || imgElement.getAttribute('data-src') || '';
@@ -1337,7 +711,6 @@ class ImageDownloadInjector {
 
   // 显示消息
   showMessage(message, type = 'info') {
-    // 移除已存在的消息
     const existingMessage = document.querySelector('.hellorf-message');
     if (existingMessage) {
       existingMessage.remove();
@@ -1385,9 +758,8 @@ class ImageDownloadInjector {
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
           shouldInject = true;
           
-          // 为新增的图片元素添加懒加载观察
           mutation.addedNodes.forEach(node => {
-            if (node.nodeType === 1) { // 元素节点
+            if (node.nodeType === 1) {
               if (node.tagName === 'IMG') {
                 this.observeLazyLoadImage(node);
               } else {
@@ -1421,7 +793,6 @@ class ImageDownloadInjector {
         e.stopPropagation();
       }
       
-      // 点击面板外部关闭面板
       if (this.isPanelVisible && this.iframe && 
           !this.iframe.contains(e.target) && 
           !this.panelButton.contains(e.target)) {
