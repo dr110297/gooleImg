@@ -28,6 +28,7 @@
 
   "host_permissions": [
     "https://plus.hellorf.com/*",
+    "https://www.shutterstock.com/*",
     "http://test.xztimes.cn/",
     "http://117.24.14.3:1012/"
   ],
@@ -42,14 +43,20 @@
       "matches": ["https://plus.hellorf.com/*"],
       "js": ["content.js"],
       "run_at": "document_end",
-      "all_frames": true  
+      "all_frames": true
+    },
+    {
+      "matches": ["https://www.shutterstock.com/*"],
+      "js": ["content-shutterstock.js"],
+      "run_at": "document_end",
+      "all_frames": false
     }
   ],
 
   "web_accessible_resources": [
     {
       "resources": ["iframe.html", "iframe.js", "image/*.png"],
-      "matches": ["https://plus.hellorf.com/*"]
+      "matches": ["https://plus.hellorf.com/*", "https://www.shutterstock.com/*"]
     }
   ]
 }

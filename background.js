@@ -49,6 +49,10 @@ class BackgroundService {
       case 'downloadImage':
         await this.downloadImage(request.data, sendResponse);
         break;
+
+      case 'downloadShutterstockImage':
+        await this.downloadShutterstockImage(request.data, sendResponse);
+        break;
       
       case 'updateUserInfo':
         await this.updateUserInfo(request.userInfo, sendResponse);
@@ -125,6 +129,97 @@ class BackgroundService {
   async redirectToLogin() {
     await chrome.tabs.create({
       url: 'http://test.xztimes.cn/'
+    });
+  }
+
+  // 下载Shutterstock AI图片
+  async downloadShutterstockImage(data, sendResponse) {
+    try {
+      const loginStatus = await this.checkLoginStatusInternal();
+      if (!loginStatus.isLoggedIn) {
+        sendResponse({
+          success: false,
+          error: '未登录',
+          requiresLogin: true
+        });
+        return;
+      }
+
+      const userData = await this.getStorageData('userData');
+
+      // 将图片URL转换为base64
+      let imageBase64 = '';
+      if (data.imageUrl) {
+        try {
+          imageBase64 = await this.imageUrlToBase64(data.imageUrl);
+        } catch (err) {
+          console.error('图片转base64失败:', err);
+          sendResponse({
+            success: false,
+            error: '图片转换失败: ' + err.message
+          });
+          return;
+        }
+      }
+
+      const requestData = {
+        imageUrl: imageBase64,
+        imageId: parseInt(data.imageId) || 0,
+        title: data.title || '',
+        userId: userData.userInfo.creationUserId || '',
+        userName: userData.userInfo.creationUserName || ''
+      };
+
+      const response = await fetch('http://117.24.14.3:1012/api/app/products/productimagelibrary/imageairecordplug', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
+      });
+
+      // 接口成功时可能返回空值，不解析JSON
+      if (response.ok) {
+        sendResponse({ success: true, data: null });
+      } else {
+        // 尝试解析错误信息
+        let errorMsg = `HTTP错误: ${response.status}`;
+        try {
+          const result = await response.json();
+          errorMsg = result.error?.code || result.message || errorMsg;
+        } catch (e) {
+          // 解析失败，使用默认错误信息
+        }
+        sendResponse({
+          success: false,
+          error: errorMsg
+        });
+      }
+    } catch (error) {
+      console.error('下载Shutterstock图片错误:', error);
+      sendResponse({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  // 将图片URL转换为base64（纯base64字符串，不含格式前缀）
+  async imageUrlToBase64(imageUrl) {
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error(`获取图片失败: ${response.status}`);
+    }
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        // 去掉 "data:image/xxx;base64," 前缀，只保留纯base64字符串
+        const base64 = reader.result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
     });
   }
 
