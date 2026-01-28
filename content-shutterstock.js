@@ -186,12 +186,27 @@ class ShutterstockDownloader {
     const idMatch = src.match(/(\d{7,})/);
     const imageId = idMatch ? idMatch[1] : '';
 
-    console.log('[Shutterstock下载器] 提取图片信息:', { src, alt, imageId });
+    // 获取详情页链接
+    const container = imgElement.closest('[class*="sstkGridItem"]') ||
+                      imgElement.closest('[data-automation="AssetGrids_GridItemContainer_div"]');
+
+    let detailUrl = '';
+    if (container) {
+      const link = container.querySelector('a[href*="image-generated"]') ||
+                   container.querySelector('a[href*="/generated/"]') ||
+                   container.querySelector('a[href]');
+      if (link) {
+        detailUrl = link.href;
+      }
+    }
+
+    console.log('[Shutterstock下载器] 提取图片信息:', { src, alt, imageId, detailUrl });
 
     return {
       imageUrl: src,
       imageId: imageId,
-      title: alt
+      title: alt,
+      detailUrl: detailUrl
     };
   }
 
@@ -310,6 +325,54 @@ class ShutterstockDownloader {
     container.appendChild(downloadBtn);
   }
 
+  // 从详情页获取高清图片URL
+  async fetchHighResImageUrl(detailUrl) {
+    try {
+      console.log('[Shutterstock下载器] 正在获取详情页:', detailUrl);
+
+      const response = await fetch(detailUrl);
+      if (!response.ok) {
+        throw new Error(`获取详情页失败: ${response.status}`);
+      }
+
+      const html = await response.text();
+
+      // 使用DOMParser解析HTML
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      // 查找所有og:image meta标签
+      const ogImageMetas = doc.querySelectorAll('meta[property="og:image"]');
+      if (!ogImageMetas || ogImageMetas.length === 0) {
+        throw new Error('未找到og:image标签');
+      }
+
+      // 查找包含-600w的URL
+      let imageUrl = null;
+      for (const meta of ogImageMetas) {
+        const content = meta.getAttribute('content');
+        if (content && content.includes('-600w')) {
+          imageUrl = content;
+          console.log('[Shutterstock下载器] 找到包含-600w的图片URL:', imageUrl);
+          break;
+        }
+      }
+
+      if (!imageUrl) {
+        throw new Error('未找到包含-600w格式的图片URL');
+      }
+
+      // 将-600w替换为-600nw
+      imageUrl = imageUrl.replace(/-600w/g, '-600nw');
+
+      console.log('[Shutterstock下载器] 获取到高清图片URL:', imageUrl);
+      return imageUrl;
+    } catch (error) {
+      console.error('[Shutterstock下载器] 获取高清图片URL失败:', error);
+      throw error;
+    }
+  }
+
   async handleDownloadClick(imgElement, button) {
     try {
       button.disabled = true;
@@ -322,6 +385,18 @@ class ShutterstockDownloader {
         button.innerHTML = '⬇️ AI';
         button.disabled = false;
         return;
+      }
+
+      // 如果有详情页URL，则从详情页获取高清图片URL
+      if (imageInfo.detailUrl) {
+        try {
+          const highResUrl = await this.fetchHighResImageUrl(imageInfo.detailUrl);
+          imageInfo.imageUrl = highResUrl;
+          console.log('[Shutterstock下载器] 使用高清图片URL:', highResUrl);
+        } catch (error) {
+          console.warn('[Shutterstock下载器] 获取高清图片失败，使用缩略图:', error);
+          // 如果获取失败，继续使用原来的缩略图URL
+        }
       }
 
       chrome.runtime.sendMessage({
@@ -340,7 +415,7 @@ class ShutterstockDownloader {
           this.showMessage('下载成功', 'success');
           button.innerHTML = '✅';
           button.style.background = 'rgba(76, 175, 80, 0.95)';
-          this.addToDownloadHistory(imageInfo, imgElement.src);
+          this.addToDownloadHistory(imageInfo, imageInfo.imageUrl);
         } else if (response && response.requiresLogin) {
           this.showLoginPrompt();
           button.innerHTML = '⬇️ AI';
